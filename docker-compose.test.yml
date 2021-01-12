@@ -1,0 +1,25 @@
+version: '3'
+services:
+  phpunit:
+    container_name: vending-machine-php-test
+    image: php:7.4-cli
+    volumes:
+      - .:/usr/src/vendingmachine
+    working_dir: /usr/src/vendingmachine
+    entrypoint: vendor/bin/phpunit
+
+  phpcs:
+    container_name: vending-machine-php-test
+    image: php:7.4-cli
+    volumes:
+      - .:/usr/src/vendingmachine
+    working_dir: /usr/src/vendingmachine
+    entrypoint: vendor/bin/phpcs
+
+  phpcbf:
+    container_name: vending-machine-php-test
+    image: php:7.4-cli
+    volumes:
+      - .:/usr/src/vendingmachine
+    working_dir: /usr/src/vendingmachine
+    entrypoint: vendor/bin/phpcbf

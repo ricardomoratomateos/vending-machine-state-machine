@@ -1,0 +1,9 @@
+version: '3'
+services:
+  php:
+    container_name: vending-machine-php
+    image: php:7.4-cli
+    volumes:
+      - .:/usr/src/vendingmachine
+    working_dir: /usr/src/vendingmachine
+    entrypoint: php ./index.php
