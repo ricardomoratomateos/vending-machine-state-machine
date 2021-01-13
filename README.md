@@ -75,6 +75,9 @@ $ composer tests:integrations # For run integration:tests
     * Two scripts for execute the code.
 * The InMemoryRepository file contains the initializated vending machine. If you want to modify the params of it, you need to change this file.
 
+## States machine
+![Diagram of the states machine](./states-machine-diagram.png)
+
 ## TODO
 * Remove interactive mode and install composer dependencies inside the docker.
 * Add SERVICE command.
