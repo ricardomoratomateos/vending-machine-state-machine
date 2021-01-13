@@ -4,10 +4,15 @@ namespace VendingMachine;
 
 class ReadyState extends AbstractVendingMachineState
 {
-    public function dispenseItemTransaction(string $productCode): void
+    public function hasEnoughChangeTransaction(string $productCode): void
     {
-        $this->vendingMachine->setState(new DispenseItemState($this->vendingMachine));
-        $this->vendingMachine->dispenseChangeTransaction($productCode);
+        $this->vendingMachine->setState(new HasChangeState($this->vendingMachine));
+
+        if ($this->vendingMachine->hasEnoughChange($productCode)) {
+            $this->vendingMachine->hasEnoughMoneyTransaction($productCode);
+        } else {
+            $this->vendingMachine->cancelTransaction($productCode);
+        }
     }
 
     public function cancelTransaction(): void

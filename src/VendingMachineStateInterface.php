@@ -9,4 +9,6 @@ interface VendingMachineStateInterface
     public function dispenseItemTransaction(string $productCode): void;
     public function cancelTransaction(): void;
     public function returnCoinsTransaction(?string $productCode = null): void;
+    public function hasEnoughMoneyTransaction(string $productCode): void;
+    public function hasEnoughChangeTransaction(string $productCode): void;
 }

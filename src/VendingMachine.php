@@ -37,6 +37,7 @@ class VendingMachine implements VendingMachineStateInterface
     {
         $this->state = new ReadyState($this);
         $this->insertedCoins = [];
+        $this->actions = [];
 
         foreach ([0.05, 0.10, 0.25, 1] as $coinValue) {
             foreach (range(1, 10) as $i) {
@@ -65,7 +66,7 @@ class VendingMachine implements VendingMachineStateInterface
      */
     public function insertCoinTransaction(float $cash): void
     {
-        $this->insertedCoins[] = $cash;
+        $this->state->insertCoinTransaction($cash);
     }
 
     /**
@@ -81,12 +82,6 @@ class VendingMachine implements VendingMachineStateInterface
      */
     public function dispenseItemTransaction(string $productCode): void
     {
-        if (!$this->hasEnoughMoney($productCode)) {
-            // TODO: Thrown exception
-        }
-        if (!$this->hasEnoughChange($productCode)) {
-            // TODO: Thrown exception
-        }
         $this->actions[] = $productCode;
         $this->products[$productCode]['items'] -= 1;
         $this->state->dispenseItemTransaction($productCode);
@@ -114,40 +109,26 @@ class VendingMachine implements VendingMachineStateInterface
         $this->state->returnCoinsTransaction($productCode);
     }
 
-    private function calculateChange(string $productCode): array
+    /**
+     * {@inheritDoc}
+     */
+    public function hasEnoughMoneyTransaction(string $productCode): void
     {
-        $price = $this->products[$productCode]['price'];
-        $valueOfInsertedCoins = $this->getInsertedCoinsValue();
-        $valueToReturn = $valueOfInsertedCoins - $price;
-
-        $coins = [];
-        while ($valueToReturn > 0.00) {
-            $coinToReturnIndex = array_keys($this->change)[0];
-            $coinToReturn = $this->change[$coinToReturnIndex];
-
-            for ($i = 1; $i < count($this->change); $i++) {
-                if (
-                    isset($this->change[$i]) &&
-                    $this->change[$i] <= $valueToReturn &&
-                    $this->change[$i] > $coinToReturn
-                ) {
-                    $coinToReturnIndex = $i;
-                    $coinToReturn = $this->change[$i];
-                }
-            }
-
-            $coins[] = $coinToReturn;
-
-            $valueToReturn -= $coinToReturn;
-            $valueToReturn = round($valueToReturn, 2);
-
-            unset($this->change[$coinToReturnIndex]);
-        }
-        
-        return $coins;
+        $this->state->hasEnoughMoneyTransaction($productCode);
     }
 
-    private function hasEnoughMoney(string $productCode): bool
+    /**
+     * {@inheritDoc}
+     */
+    public function hasEnoughChangeTransaction(string $productCode): void
+    {
+        $this->state->hasEnoughChangeTransaction($productCode);
+    }
+
+    /**
+     * {@inheritDoc}
+     */
+    public function hasEnoughMoney(string $productCode): bool
     {
         $price = $this->products[$productCode]['price'];
         $valueOfInsertedCoins = $this->getInsertedCoinsValue();
@@ -155,7 +136,10 @@ class VendingMachine implements VendingMachineStateInterface
         return $valueOfInsertedCoins >= $price;
     }
 
-    private function hasEnoughChange(string $productCode): bool
+    /**
+     * {@inheritDoc}
+     */
+    public function hasEnoughChange(string $productCode): bool
     {
         $price = $this->products[$productCode]['price'];
         $valueOfInsertedCoins = $this->getInsertedCoinsValue();
@@ -190,6 +174,49 @@ class VendingMachine implements VendingMachineStateInterface
         }
 
         return $valueToReturn === 0.00;
+    }
+
+    public function insertCoin(float $cash): void
+    {
+        $this->insertedCoins[] = $cash;
+    }
+
+    public function dispenseItem(string $productCode): void
+    {
+        $this->state->hasEnoughChangeTransaction($productCode);
+    }
+
+    private function calculateChange(string $productCode): array
+    {
+        $price = $this->products[$productCode]['price'];
+        $valueOfInsertedCoins = $this->getInsertedCoinsValue();
+        $valueToReturn = $valueOfInsertedCoins - $price;
+
+        $coins = [];
+        while ($valueToReturn > 0.00) {
+            $coinToReturnIndex = array_keys($this->change)[0];
+            $coinToReturn = $this->change[$coinToReturnIndex];
+
+            for ($i = 1; $i < count($this->change); $i++) {
+                if (
+                    isset($this->change[$i]) &&
+                    $this->change[$i] <= $valueToReturn &&
+                    $this->change[$i] > $coinToReturn
+                ) {
+                    $coinToReturnIndex = $i;
+                    $coinToReturn = $this->change[$i];
+                }
+            }
+
+            $coins[] = $coinToReturn;
+
+            $valueToReturn -= $coinToReturn;
+            $valueToReturn = round($valueToReturn, 2);
+
+            unset($this->change[$coinToReturnIndex]);
+        }
+        
+        return $coins;
     }
 
     private function getInsertedCoinsValue(): float
